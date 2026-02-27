@@ -25,10 +25,10 @@ const PetShop = () => {
     }, []);
 
     return (
-        <div>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-8 mb-8 text-center border border-yellow-100 dark:border-yellow-800">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Pet Shop</h1>
-                <p className="text-gray-600 dark:text-gray-400">Everything your furry friend needs: food, toys, and healthcare.</p>
+        <div className="px-4 py-2">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-3xl p-6 mb-6 text-center border border-yellow-100 dark:border-yellow-800">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Pet Shop</h1>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Everything your furry friend needs.</p>
             </div>
 
             {loading ? (
@@ -38,7 +38,7 @@ const PetShop = () => {
             ) : products.length === 0 ? (
                 <Message variant="info">No pet products available at the moment.</Message>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-3 mb-8">
                     {products.map((product) => (
                         <ProductCard key={product._id} product={product} />
                     ))}

@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import { api, useStore } from '../store';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
+
+const FALLBACK_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22150%22%20height%3D%22150%22%20style%3D%22background%3A%23f3f4f6%22%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%239ca3af%22%20font-family%3D%22sans-serif%22%20font-size%3D%2216%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+const ENDPOINT = 'http://localhost:5000';
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -18,6 +22,23 @@ const OrderDetails = () => {
 
     useEffect(() => {
         fetchOrder();
+    }, [id]);
+
+    useEffect(() => {
+        if (!id) return;
+
+        const socket = io(ENDPOINT);
+
+        socket.emit('join_order', id);
+
+        socket.on('status_updated', (newStatus) => {
+            console.log(`Live order status update to: ${newStatus}`);
+            fetchOrder(); // Refetch to get the latest order data
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, [id]);
 
     const fetchOrder = async () => {
@@ -139,9 +160,14 @@ const OrderDetails = () => {
                         ) : (
                             <div className="space-y-4">
                                 {order.orderItems.map((item, index) => (
-                                    <div key={index} className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
-                                        <img src={item.image === 'no-photo.jpg' ? 'https://via.placeholder.com/150' : item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md" />
-                                        <Link to={`/product/${item.product}`} className="font-medium text-gray-900 dark:text-white hover:text-primary-600 flex-1 line-clamp-2">
+                                    <div key={index} className="flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
+                                        <img
+                                            src={item.image === 'no-photo.jpg' ? FALLBACK_IMAGE : item.image}
+                                            alt={item.name}
+                                            className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+                                            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
+                                        />
+                                        <Link to={`/product/${item.product}`} className="font-medium text-gray-900 dark:text-white hover:text-primary-600">
                                             {item.name}
                                         </Link>
                                         <div className="text-gray-700 dark:text-gray-300 whitespace-nowrap">

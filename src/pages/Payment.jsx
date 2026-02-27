@@ -4,7 +4,7 @@ import { useStore } from '../store';
 import CheckoutSteps from '../components/CheckoutSteps';
 
 const Payment = () => {
-    const { shippingAddress, paymentMethod, useStore } = useStore.getState();
+    const { shippingAddress, paymentMethod } = useStore();
     const navigate = useNavigate();
 
     const [payment, setPayment] = useState(paymentMethod || 'Razorpay');
@@ -22,11 +22,11 @@ const Payment = () => {
     };
 
     return (
-        <div className="max-w-2xl mx-auto py-8">
+        <div className="px-4 py-4 pb-20">
             <CheckoutSteps step1 step2 step3 />
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mt-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Payment Method</h1>
+            <div className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mt-6 sm:mt-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6">Payment Method</h1>
 
                 <form onSubmit={submitHandler} className="space-y-6">
                     <div className="space-y-4">

@@ -20,6 +20,19 @@ api.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
+// Add a response interceptor to handle 401 Unauthorized globally
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('userInfo');
+            useStore.getState().logout();
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
+
 // --------- Zustand Store ---------
 
 export const useStore = create((set, get) => ({
@@ -33,6 +46,16 @@ export const useStore = create((set, get) => ({
             return { success: true };
         } catch (error) {
             return { success: false, error: error.response?.data?.message || error.message };
+        }
+    },
+    googleLogin: async (tokenId) => {
+        try {
+            const { data } = await api.post('/users/google', { tokenId });
+            set({ userInfo: data });
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || "Google Login Failed" };
         }
     },
     logout: () => {

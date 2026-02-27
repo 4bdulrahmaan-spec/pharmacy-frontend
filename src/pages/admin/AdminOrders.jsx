@@ -34,8 +34,8 @@ const AdminOrders = () => {
     }
 
     return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Orders</h1>
+        <div className="px-4 py-4">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Orders</h1>
 
             {loading ? (
                 <Loader />
@@ -43,8 +43,8 @@ const AdminOrders = () => {
                 <Message variant="danger">{error}</Message>
             ) : (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                    <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 min-w-[600px]">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" className="px-6 py-4 border-b dark:border-gray-700">ID</th>

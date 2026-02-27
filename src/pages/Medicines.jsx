@@ -39,10 +39,8 @@ const Medicines = () => {
     };
 
     return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Medicines</h1>
-
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="px-4 py-2">
+            <div className="flex flex-col gap-3 mb-6 bg-white dark:bg-gray-800 p-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
                 <form onSubmit={submitHandler} className="w-full md:w-1/2 relative">
                     <input
                         type="text"
@@ -55,8 +53,8 @@ const Medicines = () => {
                     <button type="submit" className="hidden">Search</button>
                 </form>
 
-                <div className="w-full md:w-auto flex items-center gap-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sort By:</label>
+                <div className="w-full flex items-center justify-between gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort By</label>
                     <select
                         className="input-field"
                         value={sort}
@@ -76,7 +74,7 @@ const Medicines = () => {
             ) : products.length === 0 ? (
                 <Message variant="info">No medicines found matching your criteria.</Message>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-3 mb-8">
                     {products.map((product) => (
                         <ProductCard key={product._id} product={product} />
                     ))}

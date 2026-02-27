@@ -18,8 +18,12 @@ const Profile = () => {
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [errorOrders, setErrorOrders] = useState('');
 
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [loadingPrescriptions, setLoadingPrescriptions] = useState(true);
+    const [errorPrescriptions, setErrorPrescriptions] = useState('');
+
     const navigate = useNavigate();
-    const { userInfo, login } = useStore();
+    const { userInfo, login, addToCart } = useStore();
 
     useEffect(() => {
         if (!userInfo) {
@@ -28,6 +32,7 @@ const Profile = () => {
             setName(userInfo.name);
             setEmail(userInfo.email);
             fetchMyOrders();
+            fetchMyPrescriptions();
         }
     }, [navigate, userInfo]);
 
@@ -40,6 +45,27 @@ const Profile = () => {
             setErrorOrders(err.response?.data?.message || err.message);
             setLoadingOrders(false);
         }
+    };
+
+    const fetchMyPrescriptions = async () => {
+        try {
+            const { data } = await api.get('/prescriptions/my');
+            setPrescriptions(data);
+            setLoadingPrescriptions(false);
+        } catch (err) {
+            setErrorPrescriptions(err.response?.data?.message || err.message);
+            setLoadingPrescriptions(false);
+        }
+    };
+
+    const handleAddPrescriptionToCart = (rx) => {
+        if (!rx.products || rx.products.length === 0) return;
+
+        rx.products.forEach(p => {
+            addToCart({ ...p.product, qty: p.qty });
+        });
+
+        navigate('/cart');
     };
 
     const submitHandler = async (e) => {
@@ -70,8 +96,8 @@ const Profile = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-1">
+        <div className="flex flex-col gap-6 px-4 py-4">
+            <div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                         <User className="w-6 h-6 text-primary-600" /> My Profile
@@ -103,7 +129,7 @@ const Profile = () => {
                 </div>
             </div>
 
-            <div className="md:col-span-3">
+            <div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                         <Package className="w-6 h-6 text-primary-600" /> My Orders
@@ -145,9 +171,9 @@ const Profile = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded text-xs font-bold ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                                        order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                                                            order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
-                                                                'bg-yellow-100 text-yellow-800'
+                                                    order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                                                        order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
+                                                            'bg-yellow-100 text-yellow-800'
                                                     }`}>
                                                     {order.status}
                                                 </span>
@@ -161,6 +187,73 @@ const Profile = () => {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+                </div>
+
+                {/* MY PRESCRIPTIONS SECTION */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mt-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                        <Package className="w-6 h-6 text-primary-600" /> My Prescriptions
+                    </h2>
+
+                    {loadingPrescriptions ? (
+                        <Loader />
+                    ) : errorPrescriptions ? (
+                        <Message variant="danger">{errorPrescriptions}</Message>
+                    ) : prescriptions.length === 0 ? (
+                        <Message variant="info">You have not uploaded any prescriptions.</Message>
+                    ) : (
+                        <div className="space-y-4">
+                            {prescriptions.map((rx) => (
+                                <div key={rx._id} className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-start md:items-center bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="w-24 h-24 flex-shrink-0 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+                                        {rx.imageUrl.includes('.pdf') ? (
+                                            <span className="text-xs font-bold text-gray-500">PDF Document</span>
+                                        ) : (
+                                            <img src={rx.imageUrl} alt="Prescription" className="w-full h-full object-cover" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 space-y-2 w-full">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Uploaded on {new Date(rx.createdAt).toLocaleDateString()}</p>
+                                                <span className={`px-2 py-1 mt-1 inline-block rounded text-xs font-bold ${rx.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                                                    rx.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    Status: {rx.status}
+                                                </span>
+                                            </div>
+                                            {rx.status === 'Approved' && rx.products && rx.products.length > 0 && (
+                                                <button
+                                                    onClick={() => handleAddPrescriptionToCart(rx)}
+                                                    className="btn-primary py-2 px-4 whitespace-nowrap"
+                                                >
+                                                    Add All to Cart
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {rx.adminNotes && (
+                                            <div className="bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 p-2 text-sm text-red-700 dark:text-red-400">
+                                                <strong>Notes:</strong> {rx.adminNotes}
+                                            </div>
+                                        )}
+
+                                        {rx.products && rx.products.length > 0 && rx.status === 'Approved' && (
+                                            <div className="mt-2 text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-100 dark:border-gray-700">
+                                                <strong className="text-gray-700 dark:text-gray-300">Prescribed Items:</strong>
+                                                <ul className="mt-1 list-disc list-inside text-gray-600 dark:text-gray-400">
+                                                    {rx.products.map(p => (
+                                                        <li key={p._id}>{p.qty}x {p.product?.name}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

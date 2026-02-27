@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store';
 import Message from '../components/Message';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -10,9 +11,10 @@ const Login = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, userInfo } = useStore();
+    const { login, googleLogin, userInfo } = useStore();
 
-    const redirect = location.search ? location.search.split('=')[1] : '/';
+    const redirectParam = location.search ? location.search.split('=')[1] : '/';
+    const redirect = redirectParam.startsWith('/') ? redirectParam : `/${redirectParam}`;
 
     useEffect(() => {
         if (userInfo) {
@@ -81,6 +83,31 @@ const Login = () => {
                         <button type="submit" className="w-full btn-primary py-3 text-base">
                             Log In
                         </button>
+                    </div>
+
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center flex-col items-center gap-4">
+                        <GoogleLogin
+                            onSuccess={async (credentialResponse) => {
+                                const result = await googleLogin(credentialResponse.credential);
+                                if (!result.success) {
+                                    setMessage(result.error);
+                                }
+                            }}
+                            onError={() => {
+                                setMessage('Google login failed');
+                            }}
+                            useOneTap
+                            containerProps={{ className: "w-full flex justify-center" }}
+                        />
                     </div>
                 </form>
 
